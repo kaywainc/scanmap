@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Scan Map Country</title>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <style type="text/css">
+    .axis text {
+    fill: "#444444"; 
+    stroke-width: "0";
+    stroke: "none"; 
+    font-size: 11px;
+    font-family:"Arial";
+    text-anchor:"end";
+    }
+
+    .axis path,
+    .axis line {
+    fill: none;
+    stroke: "#000000";
+    shape-rendering: crispEdges;
+    }
+
+    .grid {
+    fill: none;
+    stroke: #ccc;
+    shape-rendering: crispEdges;
+    }
+
+    .domain {
+    fill: none;
+    stroke: "#000";
+    shape-rendering: crispEdges;
+    }
+
+    .line {
+    fill: none;
+    stroke: "steelblue";
+    stroke-width: 2px;
+    }
+
+    .circle_shadow {
+    stroke: #ccc;
+    stroke-width: 11.5px;
+    opacity: 0.4;
+    
+    }
+
+    .no_shadow {
+    }
+    </style>
+  </head>
+  <body>
+    <div id="scanmap_country"></div> 	
+    <script type="text/javascript">    
+      //Width and height
+      var w = 1200;
+      var h = 500;
+      var padding = 20;
+      
+      //Data
+      JSONData = [{"hits":"12","id_code":"3","day_interval":"1330437000"}];
+
+      var data = JSONData.slice();
+      var hits = function(d) { return Number(d.hits); }
+      var date = function(d) { return new Date(d.day_interval * 1000); }
+          
+
+      var x = d3.time.scale()
+        .range([142, 1059])
+        .domain(d3.extent(data, date));
+
+      var y = d3.scale.linear()
+        .range([255, 60])
+        .domain([0, d3.max(data, hits)]);
+
+      //Create SVG element
+      var svg = d3.select("#scanmap_country")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h)
+        .attr("aria-label", "A country map for QR Code Scans");
+
+      svg.append("text")
+        .attr("fill", "#000000")
+        .attr("font-weight", "bold")
+        .attr("font-size", 14)
+        .attr("font-family", "Arial")
+        .attr("y", "34.9")
+        .attr("x", "142")
+        .attr("text-anchor", "start")
+        .text("QR Code Scans");
+    </script>
+  </body>
+</html>

@@ -26,7 +26,7 @@
     </style>
   </head>
   <body>
-    <div id="scanmap_country"></div> 	
+    <div id="scanmap_country"></div>  
     
     <script type="text/javascript">    
       
@@ -52,10 +52,10 @@
         .attr("height", h)
         .attr("aria-label", "A country map for QR Code Scans");
 
-      svg.append("path")
-        .datum(graticule)
-        .attr("class", "graticule")
-        .attr("d", path);
+      //svg.append("path")
+        //.datum(graticule)
+        //.attr("class", "graticule")
+        //.attr("d", path);
 
       d3.json("mapdata/world-50m.json", function(error, world) {
         svg.insert("path", ".graticule")
@@ -63,6 +63,7 @@
         .attr("class", "land")
         .attr("d", path);
 
+      // shows the countries
       svg.insert("path", ".graticule")
         .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
         .attr("class", "boundary")

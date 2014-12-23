@@ -15,7 +15,7 @@
     }
 
     .land {
-    fill: #222;
+    fill: steelblue;
     }
 
     .boundary {
@@ -31,8 +31,8 @@
     <script type="text/javascript">    
       
       // width and height      (Google Map Size is: 597 x 365 Pixel; 1.63561644)
-      var w = 1200; 
-      var h = 500; 
+      var w = 1200; //142, 1059 Measurements from Line Chart
+      var h = 500;  // 255, 60 Measurements from Line Chart
       var padding = 20;
 
 
@@ -70,18 +70,6 @@
       });
 
       d3.select(self.frameElement).style("height", h + "px");
-
-
-      //Google Map Size is: 597 x 365 Pixel; 1.63561644
-
-     
-      //var x = d3.time.scale()
-        //.range([142, 1059])
-        //.domain(d3.extent(data, date));
-
-      //var y = d3.scale.linear()
-        //.range([255, 60])
-        //.domain([0, d3.max(data, hits)]);
 
     </script>
   </body>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Scan Map Country</title>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <style type="text/css">
+
+    .graticule {
+    fill: none;
+    stroke: #ccc;
+    stroke-opacity: .5;
+    stroke-width: .5px;
+    }
+
+    .land {
+    fill: #222;
+    }
+
+    .boundary {
+    fill: none;
+    stroke: #fff;
+    stroke-width: .5px;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="scanmap_country"></div> 	
+    
+    <script type="text/javascript">    
+      
+      // width and height      (Google Map Size is: 597 x 365 Pixel; 1.63561644)
+      var w = 1200; 
+      var h = 500; 
+      var padding = 20;
+
+
+      var projection = d3.geo.mercator()
+        .scale(130) // .scale((w + 1) / 2 / Math.PI)
+        .translate([w / 2, (h / 2)+50])
+        .precision(.1);
+
+      var path = d3.geo.path()
+        .projection(projection);
+
+      var graticule = d3.geo.graticule();
+
+      var svg = d3.select("body")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h)
+        .attr("aria-label", "A country map for QR Code Scans");
+
+      svg.append("path")
+        .datum(graticule)
+        .attr("class", "graticule")
+        .attr("d", path);
+
+      d3.json("mapdata/world-50m.json", function(error, world) {
+        svg.insert("path", ".graticule")
+        .datum(topojson.feature(world, world.objects.land))
+        .attr("class", "land")
+        .attr("d", path);
+
+      svg.insert("path", ".graticule")
+        .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+        .attr("class", "boundary")
+        .attr("d", path);
+      });
+
+      d3.select(self.frameElement).style("height", h + "px");
+
+
+      //Google Map Size is: 597 x 365 Pixel; 1.63561644
+
+     
+      //var x = d3.time.scale()
+        //.range([142, 1059])
+        //.domain(d3.extent(data, date));
+
+      //var y = d3.scale.linear()
+        //.range([255, 60])
+        //.domain([0, d3.max(data, hits)]);
+
+    </script>
+  </body>
+</html>

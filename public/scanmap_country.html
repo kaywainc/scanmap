@@ -7,6 +7,14 @@
     <script src="http://d3js.org/topojson.v1.min.js"></script>
     <style type="text/css">
 
+    body {
+    background: #ccc;
+    }
+
+    #scanmap_country {
+    background: #fff;
+    }
+
     .graticule {
     fill: none;
     stroke: #ccc;
@@ -32,13 +40,14 @@
       
       // width and height      (Google Map Size is: 597 x 365 Pixel; 1.63561644)
       var w = 1200; //142, 1059 Measurements from Line Chart
-      var h = 500;  // 255, 60 Measurements from Line Chart
+      var h = 470;  // 255, 60 Measurements from Line Chart
       var padding = 20;
 
+      var color = d3.scale.category10();
 
       var projection = d3.geo.mercator()
         .scale(130) // .scale((w + 1) / 2 / Math.PI)
-        .translate([w / 2, (h / 2)+50])
+        .translate([(w / 2)-110, (h / 2)+50]) // 110 instead of 142
         .precision(.1);
 
       var path = d3.geo.path()
@@ -46,7 +55,7 @@
 
       var graticule = d3.geo.graticule();
 
-      var svg = d3.select("body")
+      var svg = d3.select("#scanmap_country")
         .append("svg")
         .attr("width", w)
         .attr("height", h)
@@ -58,12 +67,21 @@
         //.attr("d", path);
 
       d3.json("mapdata/world-50m.json", function(error, world) {
-        svg.insert("path", ".graticule")
-        .datum(topojson.feature(world, world.objects.land))
-        .attr("class", "land")
-        .attr("d", path);
+        var countries = topojson.feature(world, world.objects.countries).features,
+        neighbors = topojson.neighbors(world.objects.countries.geometries);
+        //svg.insert("path", ".graticule")
+        //.datum(topojson.feature(world, world.objects.land))
+        //.attr("class", "land")
+        //.attr("d", path);
 
-      // shows the countries
+      svg.selectAll(".country")
+        .data(countries)
+        .enter().insert("path", ".graticule")
+        .attr("class", "country")
+        .attr("d", path)
+        .style("fill", function(d, i) { return color(d.color = d3.max(neighbors[i], function(n) { return countries[n].color; }) + 1 | 0); });
+
+
       svg.insert("path", ".graticule")
         .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
         .attr("class", "boundary")

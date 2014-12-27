@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <title>Scan Map Country</title>
     <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
+    <script type="text/javascript" src="http://d3js.org/topojson.v1.min.js"></script>
     <style type="text/css">
 
     body {
@@ -33,6 +34,7 @@
     }
     </style>
   </head>
+  
   <body>
     <div id="scanmap_country"></div>  
     
@@ -43,12 +45,22 @@
       var h = 470;  // 255, 60 Measurements from Line Chart
       var padding = 20;
 
-      var color = d3.scale.category10();
+      //var color = d3.scale.category10();
+      
+      var color_domain = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+      var color_range = ["rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)"]
+      // alternative color_range: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]
+
+      var color = d3.scale.threshold()
+                    .domain(color_domain)
+                    .range(color_range);
+                  
+
 
       var projection = d3.geo.mercator()
-        .scale(130) // .scale((w + 1) / 2 / Math.PI)
-        .translate([(w / 2)-110, (h / 2)+50]) // 110 instead of 142
-        .precision(.1);
+                         .scale(130) // .scale((w + 1) / 2 / Math.PI)
+                         .translate([(w / 2)-110, (h / 2)+50]) // 110 instead of 142
+                         .precision(.1);
 
       var path = d3.geo.path()
         .projection(projection);
@@ -61,22 +73,56 @@
         .attr("height", h)
         .attr("aria-label", "A country map for QR Code Scans");
 
-      //svg.append("path")
-        //.datum(graticule)
-        //.attr("class", "graticule")
-        //.attr("d", path);
 
+//Reading map file and data
+
+/*
+queue()
+  .defer(d3.json, "mapdata/world-50m.json")
+  .defer(d3.csv, "scandata/country_scans.csv")
+  .await(ready);
+
+
+Start of Choropleth drawing
+
+  function ready(error, map, data) {
+  var rateById = {};
+  var nameById = {};
+
+  data.forEach(function(d) {
+  rateById[d.Country_Code] = +d.Scans;
+  nameById[d.Country_Code] = d.Country_Code;
+});
+
+//Drawing Choropleth
+
+  svg.append("g")
+  .selectAll("path")
+  .data(countries)
+  .enter().append("path")
+  .attr("d", path)
+  .style("fill", function(d) {
+    return color(rateById[d.properties.region]); 
+  });
+
+  };
+*/
+      
       d3.json("mapdata/world-50m.json", function(error, world) {
         var countries = topojson.feature(world, world.objects.countries).features,
-        neighbors = topojson.neighbors(world.objects.countries.geometries);
+            neighbors = topojson.neighbors(world.objects.countries.geometries);
         //svg.insert("path", ".graticule")
         //.datum(topojson.feature(world, world.objects.land))
         //.attr("class", "land")
         //.attr("d", path);
 
+
+      //Drawing Choropleth
+
       svg.selectAll(".country")
         .data(countries)
-        .enter().insert("path", ".graticule")
+        .enter()
+        .insert("path", ".graticule")
         .attr("class", "country")
         .attr("d", path)
         .style("fill", function(d, i) { return color(d.color = d3.max(neighbors[i], function(n) { return countries[n].color; }) + 1 | 0); });

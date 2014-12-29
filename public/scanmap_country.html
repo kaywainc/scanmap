@@ -79,6 +79,7 @@
 /*
 queue()
   .defer(d3.json, "mapdata/world-50m.json")
+  .defer(d3.tsv, "mapdata/world-country_names.tsv")
   .defer(d3.csv, "scandata/country_scans.csv")
   .await(ready);
 

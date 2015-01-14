@@ -33,6 +33,7 @@
     stroke: #fff;
     stroke-width: .5px;
     }
+
     </style>
   </head>
   
@@ -68,11 +69,13 @@
 
       var graticule = d3.geo.graticule();
 
+
       var svg = d3.select("#scanmap_country")
         .append("svg")
         .attr("width", w)
         .attr("height", h)
         .attr("aria-label", "A country map for QR Code Scans");
+
 
 
 //Reading map file and data
@@ -114,7 +117,7 @@ Start of Choropleth drawing
 			$.each(country_names_list, function(index, country){
 			 country_names[country.id] = country.name;
 			});
-// 			console.table(country_names)
+			// console.table(country_names)
 		});
       d3.json("mapdata/world-50m.json", function(error, world) {
         var countries = topojson.feature(world, world.objects.countries).features,
@@ -124,7 +127,7 @@ Start of Choropleth drawing
         //.attr("class", "land")
         //.attr("d", path);
 
-		console.log(countries[0]);
+		console.log(countries);
       //Drawing Choropleth
 
       svg.selectAll(".country")
@@ -132,6 +135,8 @@ Start of Choropleth drawing
         .enter()
         .insert("path", ".graticule")
         .attr("class", "country")
+        .attr("id", function(d,i) { return d.id})
+        .attr("title", function(d,i) { return country_names[d.id]})
         .attr("d", path)
         .style("fill", function(d, i) { return color(d.color = d3.max(neighbors[i], function(n) { return countries[n].color; }) + 1 | 0); });
 
@@ -143,6 +148,9 @@ Start of Choropleth drawing
       });
 
       d3.select(self.frameElement).style("height", h + "px");
+
+
+
 
     </script>
   </body>

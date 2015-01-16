@@ -121,12 +121,30 @@ Start of Choropleth drawing
   };
 */
 		var country_names = [];
-		d3.tsv("mapdata/world-country-names.tsv", function(error, country_names_list) {
-			$.each(country_names_list, function(index, country){
-			 country_names[country.id] = country.name;
-			});
-			// console.table(country_names)
+		d3.tsv("mapdata/world-country-names1.tsv", function(error, country_names_list) {
+      if(country_names_list && country_names_list.length > 0)
+      {
+        $.each(country_names_list, function(index, country){
+          country_names[country.id] = country.name;
+        }); 
+        // console.log(country_names);
+      }
 		});
+    var country_hits = [];
+    var max_hits = 0;
+      d3.json("scandata/country_hits.json", function(error, world_hits){
+        if(world_hits && world_hits.length)
+        {
+          max_hits = d3.max(world_hits, function(n) {console.log(n['hits']); return +n['hits']; });
+          
+          $.each(world_hits, function(index, world_country_hits){
+            country_hits[world_country_hits.country] = world_country_hits.hits;
+          });
+          // console.log(country_hits);
+          // d3.max(country_hits, function(n) { console.log("here i am...",n);  return n.color; });
+        }
+
+      });
       d3.json("mapdata/world-50m.json", function(error, world) {
         var countries = topojson.feature(world, world.objects.countries).features,
             neighbors = topojson.neighbors(world.objects.countries.geometries);
@@ -135,8 +153,9 @@ Start of Choropleth drawing
         //.attr("class", "land")
         //.attr("d", path);
 
-		console.log(countries);
+		// console.log(countries);
       //Drawing Choropleth
+    
 
       svg.selectAll(".country")
         .data(countries)
@@ -146,7 +165,9 @@ Start of Choropleth drawing
         .attr("id", function(d,i) { return d.id})
         .attr("title", function(d,i) { return country_names[d.id]})
         .attr("d", path)
-        .style("fill", function(d, i) { return color(d.color = d3.max(neighbors[i], function(n) { return countries[n].color; }) + 1 | 0); });
+        .style("fill", function(d, i) {
+          // console.log(country_hits[country_names[d.id]], i, d); 
+          // return color(d.color = );
 
 
       svg.insert("path", ".graticule")

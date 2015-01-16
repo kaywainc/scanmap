@@ -33,12 +33,14 @@
     stroke: #fff;
     stroke-width: .5px;
     }
+    .legend {
+    font-size: 12px;
+    }
 
     </style>
   </head>
   
   <body>
-    HELLO IS IT ME YOU'RE LOOKING FOR ? I CAN SEE IT IN YOUR EYES, I CAN SEE IT IN YOUR SMILE....
     <div id="scanmap_country"></div>  
     
     <script type="text/javascript">  
@@ -50,8 +52,9 @@
       var padding = 20;
      
       var color_domain = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-      var color_range = ["rgb(255,255,255)","rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)", "rgb(5,56,95)"];
+      var color_range = ["rgb(240,240,240)","rgb(230,240,255)", "rgb(178,209,255)", "rgb(128,178,255)", "rgb(78,148,255)", "rgb(0,102,255)", "rgb(0,82,204)", "rgb(0,71,178)", "rgb(0,61,153)", "rgb(0,51,128)", "rgb(0,31,76)"];
       // alternative color_range: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]
+      
 
       var color = d3.scale.threshold()
                     .domain(color_domain)
@@ -154,7 +157,7 @@ Start of Choropleth drawing
         .insert("path", ".graticule")
         .attr("class", "country")
         .attr("id", function(d,i) { return d.id})
-        .attr("title", function(d,i) { return country_names[d.id]})
+        .attr("title", function(d,i) { return country_names[d.id] + " : " + country_hits[country_names[d.id]]})
         .attr("d", path)
         .style("fill", function(d, i) {
          if(typeof country_hits[country_names[d.id]] === 'undefined')
@@ -178,6 +181,32 @@ Start of Choropleth drawing
       });
 
       d3.select(self.frameElement).style("height", h + "px");
+
+
+      //Adding legend for our Choropleth
+    var ext_color_domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    var legend_labels = ["0", "<10%", ">10%", ">20%", ">30%", ">40%", ">50%", ">60%", ">70%", ">80%", ">90%"]
+
+    var legend = svg.selectAll("g.legend")
+    .data(ext_color_domain)
+    .enter().append("g")
+    .attr("class", "legend");
+
+    var ls_w = 20, ls_h = 20;
+
+    legend.append("rect")
+    .attr("x", 20)
+    .attr("y", function(d, i){ return h - (i*ls_h) - 2*ls_h;})
+    .attr("width", ls_w)
+    .attr("height", ls_h)
+    .style("fill", function(d, i) { return color(d); });
+    // .style("opacity", 0.8);
+
+    legend.append("text")
+    .attr("x", 50)
+    .attr("y", function(d, i){ return h - (i*ls_h) - ls_h - 4;})
+    .text(function(d, i){ return legend_labels[i] });
+
 
 
 

@@ -49,8 +49,8 @@
       var h = 470;  // 255, 60 Measurements from Line Chart
       var padding = 20;
      
-      var color_domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-      var color_range = ["rgb(255,255,255)","rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)"];
+      var color_domain = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      var color_range = ["rgb(255,255,255)","rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)", "rgb(5,56,95)"];
       // alternative color_range: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]
 
       var color = d3.scale.threshold()
@@ -163,9 +163,10 @@ Start of Choropleth drawing
          }
          else
          {
-            country_color = color(Math.ceil(max_hits/country_hits[country_names[d.id]]));
+            country_color = color(Math.ceil((country_hits[country_names[d.id]]/max_hits)*10));
          }
          console.log(country_hits[country_names[d.id]], country_names[d.id], i, d,  country_color); 
+         // return color_range[Math.ceil(country_hits[country_names[d.id]]/max_hits)];
          return country_color;
        });
 

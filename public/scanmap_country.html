@@ -38,28 +38,19 @@
   </head>
   
   <body>
-    HELLO
+    HELLO IS IT ME YOU'RE LOOKING FOR ? I CAN SEE IT IN YOUR EYES, I CAN SEE IT IN YOUR SMILE....
     <div id="scanmap_country"></div>  
     
     <script type="text/javascript">  
 
-      //Data
-      JSONData = [
-                 [{"country":"United States","hits":"32938","timestamp":"1355830227"},{"country":"Brazil","hits":"9258","timestamp":"1334210400"},{"country":"United Kingdom","hits":"5579","timestamp":"1343959200"},{"country":"Germany","hits":"5317","timestamp":"1336388400"},{"country":"Canada","hits":"4210","timestamp":"1348952400"},{"country":"Russian Federation","hits":"4207","timestamp":"1356265533"},{"country":"India","hits":"3988","timestamp":"1355727256"},{"country":"Thailand","hits":"3469","timestamp":"1366826915"},{"country":"Taiwan","hits":"2985","timestamp":"1375947991"},{"country":"Italy","hits":"2848","timestamp":"1355749324"},{"country":"France","hits":"2791","timestamp":"1358002457"},{"country":"Mexico","hits":"2610","timestamp":"1355770260"},{"country":"Australia","hits":"2478","timestamp":"1372096008"},{"country":"Saudi Arabia","hits":"2008","timestamp":"1334476800"},{"country":"Spain","hits":"1936","timestamp":"1334242800"},{"country":"Turkey","hits":"1860","timestamp":"1364964644"},{"country":"Poland","hits":"1855","timestamp":"1334354400"},{"country":"Iran, Islamic Republic of","hits":"1827","timestamp":"1345600800"},{"country":"Czech Republic","hits":"1648","timestamp":"1390554261"},{"country":"China","hits":"1611","timestamp":"1359315982"},{"country":"Switzerland","hits":"1562","timestamp":"1335092400"},{"country":"Netherlands","hits":"1560","timestamp":"1369288786"},{"country":"Vietnam","hits":"1542","timestamp":"1355732509"},{"country":"Hong Kong","hits":"1537","timestamp":"1334192400"},{"country":"Ukraine","hits":"1450","timestamp":"1337263200"},{"country":"Malaysia","hits":"1295","timestamp":"1353603600"},{"country":"Portugal","hits":"1289","timestamp":"1355747180"},{"country":"Serbia","hits":"1273","timestamp":"1333454400"},{"country":"Israel","hits":"1238","timestamp":"1355723369"},{"country":"Indonesia","hits":"1152","timestamp":"1358651980"},{"country":"Sweden","hits":"1042","timestamp":"1355737889"}];
-
-      var data = JSONData.slice();
-      var hits = function(d) { return Number(d.hits); }
-      var country = function(d) {return d.country; }
-      var date = function(d) { return new Date(d.timestamp * 1000); }
-        
       
       // width and height      (Google Map Size is: 597 x 365 Pixel; 1.63561644)
       var w = 1200; //142, 1059 Measurements from Line Chart
       var h = 470;  // 255, 60 Measurements from Line Chart
       var padding = 20;
      
-      var color_domain = [0, d3.max(data, hits)]
-      var color_range = ["rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)"]
+      var color_domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      var color_range = ["rgb(255,255,255)","rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)"];
       // alternative color_range: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]
 
       var color = d3.scale.threshold()
@@ -135,7 +126,7 @@ Start of Choropleth drawing
       d3.json("scandata/country_hits.json", function(error, world_hits){
         if(world_hits && world_hits.length)
         {
-          max_hits = d3.max(world_hits, function(n) {console.log(n['hits']); return +n['hits']; });
+          max_hits = d3.max(world_hits, function(n) {return +n['hits']; });
           
           $.each(world_hits, function(index, world_country_hits){
             country_hits[world_country_hits.country] = world_country_hits.hits;
@@ -166,8 +157,17 @@ Start of Choropleth drawing
         .attr("title", function(d,i) { return country_names[d.id]})
         .attr("d", path)
         .style("fill", function(d, i) {
-          // console.log(country_hits[country_names[d.id]], i, d); 
-          // return color(d.color = );
+         if(typeof country_hits[country_names[d.id]] === 'undefined')
+         {
+            country_color = color(0);
+         }
+         else
+         {
+            country_color = color(Math.ceil(max_hits/country_hits[country_names[d.id]]));
+         }
+         console.log(country_hits[country_names[d.id]], country_names[d.id], i, d,  country_color); 
+         return country_color;
+       });
 
 
       svg.insert("path", ".graticule")

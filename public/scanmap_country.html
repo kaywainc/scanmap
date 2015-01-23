@@ -159,6 +159,12 @@ Start of Choropleth drawing
         .attr("id", function(d,i) { return d.id})
         .attr("title", function(d,i) { return country_names[d.id] + " : " + country_hits[country_names[d.id]]})
         .attr("d", path)
+        .on('mouseover', function(d,i,e){
+			$('#'+d.id).attr('opacity',0.5);
+        })
+        .on("mouseout", function(d, i){
+        	$('#'+d.id).attr('opacity',1);
+        })
         .style("fill", function(d, i) {
          if(typeof country_hits[country_names[d.id]] === 'undefined')
          {
@@ -168,7 +174,7 @@ Start of Choropleth drawing
          {
             country_color = color(Math.ceil((country_hits[country_names[d.id]]/max_hits)*10));
          }
-         console.log(country_hits[country_names[d.id]], country_names[d.id], i, d,  country_color); 
+//          console.log(country_hits[country_names[d.id]], country_names[d.id], i, d,  country_color); 
          // return color_range[Math.ceil(country_hits[country_names[d.id]]/max_hits)];
          return country_color;
        });
@@ -206,6 +212,13 @@ Start of Choropleth drawing
     .attr("x", 50)
     .attr("y", function(d, i){ return h - (i*ls_h) - ls_h - 4;})
     .text(function(d, i){ return legend_labels[i] });
+    
+    $(document).ready(function(){
+	    $('.country').on('mouseover', function(e){
+	    	console.log(this);
+	    });
+    	
+    });
 
 
 

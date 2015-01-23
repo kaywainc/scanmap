@@ -160,10 +160,14 @@ Start of Choropleth drawing
         .attr("title", function(d,i) { return country_names[d.id] + " : " + country_hits[country_names[d.id]]})
         .attr("d", path)
         .on('mouseover', function(d,i,e){
-			$('#'+d.id).attr('opacity',0.5);
+			//$('#'+d.id).attr('opacity',0.5);
+			$('#'+d.id).attr('stroke',"#AAA");
+        	$('#'+d.id).attr('stroke-width',0.5)
         })
         .on("mouseout", function(d, i){
         	$('#'+d.id).attr('opacity',1);
+        	$('#'+d.id).attr('stroke',"#AAA");
+        	$('#'+d.id).attr('stroke-width',0);
         })
         .style("fill", function(d, i) {
          if(typeof country_hits[country_names[d.id]] === 'undefined')

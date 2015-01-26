@@ -25,14 +25,16 @@
     }
    
     .land {
-    fill: #efefef;
+    fill: #eff3ff;
     }
+    
     
     .boundary {
     fill: none;
-    stroke: #fff;
-    stroke-width: .5px;
+    /*stroke: #fff;
+    stroke-width: .5px;*/
     }
+
 
     .legend {
     font-size: 12px;
@@ -49,16 +51,22 @@
       // width and height      (Google Map Size is: 597 x 365 Pixel; 1.63561644)
       var w = 1200; //142, 1059 Measurements from Line Chart
       var h = 470;  // 255, 60 Measurements from Line Chart
+      var centered;
       var padding = 20;
 
      
       //var color_domain = [0, d3.max(data, scans)] 
       var color_domain = [0, 300]
       var ext_color_domain = [0, 5, 10, 15, 20, 250]
-      var legend_labels = ["below 1%", "1-20%", "21-40%", "41-60%", "61-80%", "81-100%"]     
-      var color_range = [ //"rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", "rgb(158,202,225)"
-       "rgb(158,202,225)" , "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)"]
-      // alternative color_range: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]
+      var legend_labels = ["0%", "Up to 20%", "21 - 40%", "41 - 60%", "61 - 80%", "81 - 100%"]     
+      var color_range = [ "rgb(239,243,255)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)",
+                          "rgb(49,130,189)", "rgb(8,81,156)"]
+      // IN HEX: #eff3ff, #c6dbef, #9ecae1, #6baed6, #3182bd, #08519c
+      // From http://colorbrewer2.org/
+      
+      // Alternative Color Range with more colors: "rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", 
+      // "rgb(158,202,225)", "rgb(158,202,225)" , "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", 
+      // "rgb(8,81,156)", "rgb(8,48,//107)"]
 
       var color = d3.scale.quantize()
                     .domain([0, 30])
@@ -71,7 +79,7 @@
                          .precision(.1);
 
       var path = d3.geo.path()
-        .projection(projection);
+                   .projection(projection);
 
       var graticule = d3.geo.graticule();
 
@@ -87,21 +95,22 @@
         .defer(d3.csv, "scandata/country_scans.csv")
         .await(ready);
 
+      var g = svg.append("g");
 
       function ready(error, world, scans) {
         var scansById = {}; 
 
-      scans.forEach(function(d) { scansById[d.id] = +d.scans; }); // +d.scans => the + converts to a number
+      scans.forEach(function(d) { scansById[d.id] = +d.scans; }); // +d.scans => the + converts to a number      
 
-
-      svg.append("g")
-          .attr("class", "land")
+      g.append("g")
+        .attr("class", "land")
         .selectAll("path")
-          .data(topojson.feature(world, world.objects.countries).features)
-        .enter().append("path")
-          .attr("d", path)
-          .style("fill", function(d) { return color(scansById[d.id]); });
-
+        .data(topojson.feature(world, world.objects.countries).features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .style("fill", function(d) { return color(scansById[d.id]); })
+        .on("click", clicked); // Zoom in function
 
       svg.append("path")
         .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a.id !== b.id; }))
@@ -109,7 +118,7 @@
         .attr("d", path);
       };
 
-      // Legend for the Choropleth
+      //Adding the legend for our Choropleth
 
       var legend = svg.selectAll("g.legend")
         .data(ext_color_domain)
@@ -131,6 +140,33 @@
         .attr("x", 50)
         .attr("y", function(d, i){ return h - (i*ls_h) - ls_h - 4;})
         .text(function(d, i){ return legend_labels[i]; });
+
+
+      // Zoom in function
+      function clicked(d) {
+        var x, y, k;
+
+      if (d && centered !== d) {
+        var centroid = path.centroid(d);
+        x = centroid[0];
+        y = centroid[1];
+        k = 4;
+        centered = d;
+      } else {
+        x = w / 2;
+        y = h / 2;
+        k = 1;
+        centered = null;
+      }
+
+      g.selectAll("path")
+        .classed("active", centered && function(d) { return d === centered; });
+
+      g.transition()
+        .duration(750)
+        .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+        .style("stroke-width", 1.5 / k + "px"); 
+      } 
 
 
     </script>

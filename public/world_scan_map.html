@@ -27,14 +27,12 @@
     .land {
     fill: #eff3ff;
     }
-    
-    
+       
     .boundary {
     fill: none;
     /*stroke: #fff;
     stroke-width: .5px;*/
     }
-
 
     .legend {
     font-size: 12px;
@@ -48,38 +46,31 @@
     
     <script type="text/javascript">  
 
-      // width and height      (Google Map Size is: 597 x 365 Pixel; 1.63561644)
+      // width and height 
       var w = 1200; //142, 1059 Measurements from Line Chart
       var h = 470;  // 255, 60 Measurements from Line Chart
       var centered;
       var padding = 20;
-
      
-      //var color_domain = [0, d3.max(data, scans)] 
-      var color_domain = [0, d3.max(d.scans)]
-      var ext_color_domain = [0, 5, 10, 15, 20, 250]
+      var color_domain = [0, 30]
+      var ext_color_domain = [0, 5, 10, 15, 20, 25]
       var legend_labels = ["0%", "Up to 20%", "21 - 40%", "41 - 60%", "61 - 80%", "81 - 100%"]     
       var color_range = [ "rgb(239,243,255)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)",
                           "rgb(49,130,189)", "rgb(8,81,156)"]
       // IN HEX: #eff3ff, #c6dbef, #9ecae1, #6baed6, #3182bd, #08519c
       // From http://colorbrewer2.org/
       
-      // Alternative Color Range with more colors: "rgb(247,251,255)", "rgb(222,235,247)", "rgb(198,219,239)", 
-      // "rgb(158,202,225)", "rgb(158,202,225)" , "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", 
-      // "rgb(8,81,156)", "rgb(8,48,//107)"]
-
       var color = d3.scale.quantize()
-                    .domain([0, 30])
-                    .range(color_range);
-                  
+        .domain(color_domain)
+        .range(color_range);  
 
       var projection = d3.geo.mercator()
-                         .scale(130) // .scale((w + 1) / 2 / Math.PI)
-                         .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
-                         .precision(.1);
+        .scale(130) 
+        .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
+        .precision(.1);
 
       var path = d3.geo.path()
-                   .projection(projection);
+        .projection(projection);
 
       var graticule = d3.geo.graticule();
 
@@ -89,18 +80,18 @@
         .attr("height", h)
         .attr("aria-label", "A country map for QR Code Scans");
 
+      var g = svg.append("g");
 
       queue()
         .defer(d3.json, "mapdata/world-50m.json")
         .defer(d3.csv, "scandata/country_scans.csv")
         .await(ready);
 
-      var g = svg.append("g");
 
       function ready(error, world, scans) {
         var scansById = {}; 
 
-      scans.forEach(function(d) { scansById[d.id] = +d.scans; }); // +d.scans => the + converts to a number      
+      scans.forEach(function(d) { scansById[d.id] = +d.scans; }); // +d.scans => the + converts to a number  
 
       g.append("g")
         .attr("class", "land")
@@ -118,8 +109,8 @@
         .attr("d", path);
       };
 
-      //Adding the legend for our Choropleth
 
+      //Adding the legend for our Choropleth
       var legend = svg.selectAll("g.legend")
         .data(ext_color_domain)
         .enter()
@@ -134,7 +125,7 @@
         .attr("width", ls_w)
         .attr("height", ls_h)
         .style("fill", function(d, i) { return color(d); })
-        .style("opacity", 0.8);
+        //.style("opacity", 0.8);
 
       legend.append("text")
         .attr("x", 50)

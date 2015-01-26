@@ -52,8 +52,8 @@
       var h = 470;  // 255, 60 Measurements from Line Chart
       var padding = 20;
      
-      var color_domain = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-      var color_range = ["rgb(240,240,240)","rgb(230,240,255)", "rgb(178,209,255)", "rgb(128,178,255)", "rgb(78,148,255)", "rgb(0,102,255)", "rgb(0,82,204)", "rgb(0,71,178)", "rgb(0,61,153)", "rgb(0,51,128)", "rgb(0,31,76)"];
+      var color_domain = [1, 2, 3, 4, 5, 6];
+      var color_range = ["rgb(240,240,240)","rgb(230,240,255)", "rgb(178,209,255)", "rgb(0,102,255)", "rgb(0,71,178)", "rgb(0,31,76)"];
       // alternative color_range: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]
       
 
@@ -85,40 +85,6 @@
 
 
 
-//Reading map file and data
-
-/*
-queue()
-  .defer(d3.json, "mapdata/world-50m.json")
-  .defer(d3.tsv, "mapdata/world-country_names.tsv")
-  .defer(d3.csv, "scandata/country_scans.csv")
-  .await(ready);
-
-
-Start of Choropleth drawing
-
-  function ready(error, map, data) {
-  var rateById = {};
-  var nameById = {};
-
-  data.forEach(function(d) {
-  rateById[d.Country_Code] = +d.Scans;
-  nameById[d.Country_Code] = d.Country_Code;
-});
-
-//Drawing Choropleth
-
-  svg.append("g")
-  .selectAll("path")
-  .data(countries)
-  .enter().append("path")
-  .attr("d", path)
-  .style("fill", function(d) {
-    return color(rateById[d.properties.region]); 
-  });
-
-  };
-*/
 		var country_names = [];
 		d3.tsv("mapdata/world-country-names1.tsv", function(error, country_names_list) {
       if(country_names_list && country_names_list.length > 0)
@@ -141,6 +107,30 @@ Start of Choropleth drawing
           });
           // console.log(country_hits);
           // d3.max(country_hits, function(n) { console.log("here i am...",n);  return n.color; });
+
+          var ext_color_domain = [0, 1, 2, 3, 4, 5]
+    var legend_labels = ["0", "< " + Math.round(max_hits*0.2), Math.round(max_hits*0.2) +"-"+ Math.round(max_hits*0.4), Math.round(max_hits*0.4) +"-"+ Math.round(max_hits*0.6), Math.round(max_hits*0.6) +"-"+ Math.round(max_hits*0.8), Math.round(max_hits*0.8) +"-"+ max_hits]
+
+    var legend = svg.selectAll(".legend")
+    .data(ext_color_domain)
+    .enter().append("g")
+    .attr("class", "legend");
+
+    var ls_w = 20, ls_h = 20;
+
+    legend.append("rect")
+    .attr("x", 20)
+    .attr("y", function(d, i){ return h - (i*ls_h) - 2*ls_h;})
+    .attr("width", ls_w)
+    .attr("height", ls_h)
+    .style("fill", function(d, i) { return color(d); });
+
+    // .style("opacity", 0.8);
+
+    legend.append("text")
+    .attr("x", 50)
+    .attr("y", function(d, i){ return h - (i*ls_h) - ls_h - 4;})
+    .text(function(d, i){ return legend_labels[i] });
         }
 
       });
@@ -165,14 +155,10 @@ Start of Choropleth drawing
         .attr("title", function(d,i) { return country_names[d.id] + " : " + country_hits[country_names[d.id]]})
         .attr("d", path)
         .on('mouseover', function(d,i,e){
-			//$('#'+d.id).attr('opacity',0.5);
-			$('#'+d.id).attr('stroke',"#AAA");
-        	$('#'+d.id).attr('stroke-width',0.5)
+			$('#'+d.id).attr('opacity',0.5);
         })
         .on("mouseout", function(d, i){
         	$('#'+d.id).attr('opacity',1);
-        	$('#'+d.id).attr('stroke',"#AAA");
-        	$('#'+d.id).attr('stroke-width',0);
         })
         .style("fill", function(d, i) {
          if(typeof country_hits[country_names[d.id]] === 'undefined')
@@ -181,9 +167,8 @@ Start of Choropleth drawing
          }
          else
          {
-            country_color = color(Math.ceil((country_hits[country_names[d.id]]/max_hits)*10));
+            country_color = color(Math.ceil((country_hits[country_names[d.id]]/max_hits)*5));
          }
-//          console.log(country_hits[country_names[d.id]], country_names[d.id], i, d,  country_color); 
          // return color_range[Math.ceil(country_hits[country_names[d.id]]/max_hits)];
          return country_color;
        });
@@ -199,28 +184,7 @@ Start of Choropleth drawing
 
 
       //Adding legend for our Choropleth
-    var ext_color_domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    var legend_labels = ["0", "<10%", ">10%", ">20%", ">30%", ">40%", ">50%", ">60%", ">70%", ">80%", ">90%"]
-
-    var legend = svg.selectAll("g.legend")
-    .data(ext_color_domain)
-    .enter().append("g")
-    .attr("class", "legend");
-
-    var ls_w = 20, ls_h = 20;
-
-    legend.append("rect")
-    .attr("x", 20)
-    .attr("y", function(d, i){ return h - (i*ls_h) - 2*ls_h;})
-    .attr("width", ls_w)
-    .attr("height", ls_h)
-    .style("fill", function(d, i) { return color(d); });
-    // .style("opacity", 0.8);
-
-    legend.append("text")
-    .attr("x", 50)
-    .attr("y", function(d, i){ return h - (i*ls_h) - ls_h - 4;})
-    .text(function(d, i){ return legend_labels[i] });
+    
     
     $(document).ready(function(){
 	    $('.country').on('mouseover', function(e){
@@ -228,6 +192,7 @@ Start of Choropleth drawing
 	    });
     	
     });
+  
 
 
 

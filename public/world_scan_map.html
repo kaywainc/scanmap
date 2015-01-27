@@ -46,18 +46,18 @@
     
     <script type="text/javascript">  
 
-      // width and height 
-      var w = 1200; //142, 1059 Measurements from Line Chart
+      // Width and height 
+      var w = 1200; // 142, 1059 Measurements from Line Chart
       var h = 470;  // 255, 60 Measurements from Line Chart
       var centered;
       var padding = 20;
      
-      var color_domain = [0, 30]
-      var ext_color_domain = [0, 5, 10, 15, 20, 25]
-      var legend_labels = ["0%", "Up to 20%", "21 - 40%", "41 - 60%", "61 - 80%", "81 - 100%"]     
+      var color_domain = [0, 35] // arbitrarily cut at 35
+      var ext_color_domain = [0, 7, 14, 21, 28, 35]
+      var legend_labels = ["0 Scans", "Up to 7 Scans", "Up to 14 Scans", "Upd to 21 Scans", "Up to 28 Scans", "More than 28 Scans"]     
       var color_range = [ "rgb(239,243,255)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)",
                           "rgb(49,130,189)", "rgb(8,81,156)"]
-      // IN HEX: #eff3ff, #c6dbef, #9ecae1, #6baed6, #3182bd, #08519c
+      // In Hex: #eff3ff, #c6dbef, #9ecae1, #6baed6, #3182bd, #08519c
       // From http://colorbrewer2.org/
       
       var color = d3.scale.quantize()

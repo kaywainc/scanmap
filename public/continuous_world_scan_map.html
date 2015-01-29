@@ -93,20 +93,23 @@
       // world_hits => [{"country":"United States","id_iso_country":"840","hits":"2040","timestamp":"1355830227"}
 
       function ready(error, world, world_hits) {
+        var world_hits = world_hits
         var countries = topojson.feature(world, world.objects.countries).features
         var max_hits = d3.max(world_hits, function(n) { return +n['hits']; });
 
         var ratios = world_hits
           .map(function(d) { 
             if (d.hits == 0) { 
-              return 0.01 
+              return world_hits.ratio = 0.01 
             } else if (d.hits / max_hits == 1) { 
-              return 0.99 
+              return world_hits.ratio = 0.99 
             } else { 
-              return d.hits/max_hits; }
+              return world_hits.ratio = d.hits/max_hits; }
           })
           .sort(function(a, b) { return a - b; });
 
+        console.log(world_hits)
+        console.log(world_hits.ratio)
         console.log(ratios)
 
         color.domain([d3.quantile(ratios, .01), d3.quantile(ratios, .99)]);
@@ -116,7 +119,7 @@
           .selectAll("path")
           .data(countries)
           .enter().append("path")
-          .style("fill", function(d) { return color(world_hits[d.id].ratios); })
+          .style("fill", color(world_hits.ratio)) //color(world_hits[d.id].ratios);
           .attr("d", path);
       };
 

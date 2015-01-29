@@ -6,6 +6,7 @@
     <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
     <script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
     <script type="text/javascript" src="http://d3js.org/topojson.v1.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
     <style type="text/css">
 
     body {
@@ -97,6 +98,26 @@
         var countries = topojson.feature(world, world.objects.countries).features
         var max_hits = d3.max(world_hits, function(n) { return +n['hits']; });
 
+        var countriesObject = [];
+        $.when(
+        countriesObject = countries.map(function ( d, i ){ 
+          $.each(world_hits,function (index,country){
+              if( d.id == country.id_iso_country)
+              {
+                d.world_country = country;
+                return false;
+              }
+          });
+        })).then(
+          svg.append("g")
+          .attr("class", "countries")
+          .selectAll("path")
+          .data(countriesObject)
+          .enter().append("path")
+          .style("fill", function(d,i) { console.log(countriesObject); }) //color(world_hits[d.id].ratios);
+          .attr("d", path)
+        );
+        //console.log(countries);
         var ratios = world_hits
           .map(function(d) { 
             if (d.hits == 0) { 
@@ -111,19 +132,14 @@
           })
           .sort(function(a, b) { return a - b; });
 
-        console.log(world_hits);
+        // console.log(world_hits);
         // console.log(world_hits.ratio)
-        console.log(ratios);
+        // console.log(ratios);
 
         color.domain([d3.quantile(ratios, .01), d3.quantile(ratios, .99)]);
         
-        svg.append("g")
-          .attr("class", "countries")
-          .selectAll("path")
-          .data(countries)
-          .enter().append("path")
-          .style("fill", color(world_hits.ratio)) //color(world_hits[d.id].ratios);
-          .attr("d", path);
+        
+        
       };
 
 

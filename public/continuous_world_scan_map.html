@@ -100,17 +100,20 @@
         var ratios = world_hits
           .map(function(d) { 
             if (d.hits == 0) { 
-              return world_hits.ratio = 0.01 
+              d.ratio=0.01;
+              return d.ratio;
             } else if (d.hits / max_hits == 1) { 
-              return world_hits.ratio = 0.99 
+              d.ratio=0.99;
+              return d.ratio;
             } else { 
-              return world_hits.ratio = d.hits/max_hits; }
+              d.ratio=d.hits/max_hits;
+              return d.ratio; }
           })
           .sort(function(a, b) { return a - b; });
 
-        console.log(world_hits)
-        console.log(world_hits.ratio)
-        console.log(ratios)
+        console.log(world_hits);
+        // console.log(world_hits.ratio)
+        console.log(ratios);
 
         color.domain([d3.quantile(ratios, .01), d3.quantile(ratios, .99)]);
         

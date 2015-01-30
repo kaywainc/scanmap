@@ -26,7 +26,7 @@
     }
    
     .countries {
-    fill: red; /*#eff3ff;*/
+    /*  fill: red; /*#eff3ff;*/
     }
        
     .boundary {
@@ -91,54 +91,52 @@
         .defer(d3.json, "scandata/country.json")
         .await(ready);
       
-      // world_hits => [{"country":"United States","id_iso_country":"840","hits":"2040","timestamp":"1355830227"}
 
       function ready(error, world, world_hits) {
         var world_hits = world_hits
         var countries = topojson.feature(world, world.objects.countries).features
         var max_hits = d3.max(world_hits, function(n) { return +n['hits']; });
-
-        var countriesObject = [];
-        $.when(
-        countriesObject = countries.map(function ( d, i ){ 
+		console.log(max_hits);
+     
+        ratios = countries.map(function ( d ){ 
           $.each(world_hits,function (index,country){
-              if( d.id == country.id_iso_country)
+        	  d.world_country = [];
+              if( d.id == parseInt(country.id_iso_country))
               {
+            	if(country.hits == 0)
+            		{
+            			d.ratio = 0.0001;
+            		}
+            	else if(country.hits / max_hits == 1)
+            		{
+            			d.ratio = 0.99;
+            		}
+            	else
+            		{
+            			d.ratio = country.hits/max_hits;
+            		}
                 d.world_country = country;
                 return false;
               }
           });
-        })).then(
+          if(typeof d.ratio !== 'undefined')
+       	  {
+         	return d.ratio;
+       	  }
+          else
+       		{
+        	return .001;  
+        	}
+        }).sort(function(a, b) { return a - b; });
+        console.log(ratios);
+        color.domain([d3.quantile(ratios, .0001), d3.quantile(ratios, 1)]);
           svg.append("g")
           .attr("class", "countries")
           .selectAll("path")
-          .data(countriesObject)
+          .data(countries)
           .enter().append("path")
-          .style("fill", function(d,i) { console.log(countriesObject); }) //color(world_hits[d.id].ratios);
-          .attr("d", path)
-        );
-        //console.log(countries);
-        var ratios = world_hits
-          .map(function(d) { 
-            if (d.hits == 0) { 
-              d.ratio=0.01;
-              return d.ratio;
-            } else if (d.hits / max_hits == 1) { 
-              d.ratio=0.99;
-              return d.ratio;
-            } else { 
-              d.ratio=d.hits/max_hits;
-              return d.ratio; }
-          })
-          .sort(function(a, b) { return a - b; });
-
-        // console.log(world_hits);
-        // console.log(world_hits.ratio)
-        // console.log(ratios);
-
-        color.domain([d3.quantile(ratios, .01), d3.quantile(ratios, .99)]);
-        
-        
+          .style("fill", function(d,i) { if(typeof d.ratio !== "undefined") return color(d.ratio); else return color(.0001)})
+          .attr("d", path);
         
       };
 

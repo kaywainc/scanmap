@@ -52,14 +52,16 @@
       var h = 470;  // 255, 60 Measurements from Line Chart
       var padding = 20;
      
-      var color_domain = [1, 2, 3, 4, 5, 6];
-      var color_range = ["rgb(240,240,240)","rgb(230,240,255)", "rgb(178,209,255)", "rgb(0,102,255)", "rgb(0,71,178)", "rgb(0,31,76)"];
+      var ext_color_domain = [0, 10, 20, 30, 40, 2040]
+      var legend_labels = ["0 Scans", "Up to 10 Scans", "Up to 20 Scans", "Upd to 21 Scans", "Up to 28 Scans", "More than 2000 Scans"]
       // alternative color_range: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]
       
 
-      var color = d3.scale.threshold()
-                    .domain(color_domain)
-                    .range(color_range);
+       var color = d3.scale.log()
+//         .range(["hsl(200,100%,95%)", "hsl(200,100%,10%)"])
+//         .range(["hsl(216.4,69.5%,51.2%)", "hsl(220,69.2%,92.4%)"])
+        .range(["hsl(217.5,69%,88.6%)", "hsl(216.6,69.5%,46.3%)"])
+        .interpolate(d3.interpolateHcl);
                   
 
 //       var projection = d3.geo.mercator()
@@ -67,12 +69,12 @@
 //                          .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
 //                          .precision(.1);
       var projection = d3.geo.larrivee()
-                         .scale(130) // .scale((w + 1) / 2 / Math.PI)
-                         .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
-                         .precision(.1);
+                       .scale(130) // .scale((w + 1) / 2 / Math.PI)
+                       .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
+                       .precision(.1);
 
       var path = d3.geo.path()
-        .projection(projection);
+                .projection(projection);
 
       var graticule = d3.geo.graticule();
 
@@ -83,102 +85,73 @@
         .attr("height", h)
         .attr("aria-label", "A country map for QR Code Scans");
 
+      queue()
+          .defer(d3.json, "mapdata/world-50m.json")
+          .defer(d3.json, "scandata/country.json")
+          .await(ready);
 
+      function ready(error, world, world_hits) {
+        var world_hits = world_hits
+        var countries = topojson.feature(world, world.objects.countries).features
+        var max_hits = d3.max(world_hits, function(n) { return +n['hits']; });
 
-		var country_names = [];
-		d3.tsv("mapdata/world-country-names1.tsv", function(error, country_names_list) {
-      if(country_names_list && country_names_list.length > 0)
-      {
-        $.each(country_names_list, function(index, country){
-          country_names[country.id] = country.name;
-        }); 
-        // console.log(country_names);
-      }
-		});
-    var country_hits = [];
-    var max_hits = 0;
-      d3.json("scandata/country_hits.json", function(error, world_hits){
-        if(world_hits && world_hits.length)
-        {
-          max_hits = d3.max(world_hits, function(n) {return +n['hits']; });
-          
-          $.each(world_hits, function(index, world_country_hits){
-            country_hits[world_country_hits.country] = world_country_hits.hits;
+        ratios = countries.map(function ( d ){ 
+          $.each(world_hits,function (index,country){
+            d.world_country = [];
+              if( d.id == parseInt(country.id_iso_country))
+              {
+              if(country.hits == 0)
+                {
+                  d.ratio = 0.0001;
+                }
+              else if(country.hits / max_hits == 1)
+                {
+                  d.ratio = 0.99;
+                }
+              else
+                {
+                  d.ratio = country.hits/max_hits;
+                }
+                d.world_country = country;
+                return false;
+              }
           });
-          // console.log(country_hits);
-          // d3.max(country_hits, function(n) { console.log("here i am...",n);  return n.color; });
+          if(typeof d.ratio !== 'undefined')
+          {
+          return d.ratio;
+          }
+          else
+          {
+          return .001;  
+          }
+        }).sort(function(a, b) { return a - b; });
 
-          var ext_color_domain = [0, 1, 2, 3, 4, 5]
-    var legend_labels = ["0", "< " + Math.round(max_hits*0.2), Math.round(max_hits*0.2) +"-"+ Math.round(max_hits*0.4), Math.round(max_hits*0.4) +"-"+ Math.round(max_hits*0.6), Math.round(max_hits*0.6) +"-"+ Math.round(max_hits*0.8), Math.round(max_hits*0.8) +"-"+ max_hits]
+        color.domain([d3.quantile(ratios, .0001), d3.quantile(ratios, 1)]);
 
-    var legend = svg.selectAll(".legend")
-    .data(ext_color_domain)
-    .enter().append("g")
-    .attr("class", "legend");
+        svg.append("g")
+            .attr("class", "countries")
+            .selectAll("path")
+            .data(countries)
+            .enter().append("path")
+            .attr("id", function(d,i) { return d.id})
+            .on('mouseover', function(d,i,e){
+              $('#'+d.id).attr('opacity',0.5);
+            })
+            .on("mouseout", function(d, i){
+              $('#'+d.id).attr('opacity',1);
+            })
+            .style("fill", function(d,i) { if(typeof d.ratio !== "undefined") return color(d.ratio); else return "#eee";})
+            .attr("d", path);
 
-    var ls_w = 20, ls_h = 20;
+        svg.insert("path", ".graticule")
+          .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+          .attr("class", "boundary")
+          .attr("d", path);
 
-    legend.append("rect")
-    .attr("x", 20)
-    .attr("y", function(d, i){ return h - (i*ls_h) - 2*ls_h;})
-    .attr("width", ls_w)
-    .attr("height", ls_h)
-    .style("fill", function(d, i) { return color(d); });
-
-    // .style("opacity", 0.8);
-
-    legend.append("text")
-    .attr("x", 50)
-    .attr("y", function(d, i){ return h - (i*ls_h) - ls_h - 4;})
-    .text(function(d, i){ return legend_labels[i] });
-        }
-
-      });
-      d3.json("mapdata/world-50m.json", function(error, world) {
-        var countries = topojson.feature(world, world.objects.countries).features,
-            neighbors = topojson.neighbors(world.objects.countries.geometries);
-        //svg.insert("path", ".graticule")
-        //.datum(topojson.feature(world, world.objects.land))
-        //.attr("class", "land")
-        //.attr("d", path);
-
-		// console.log(countries);
-      //Drawing Choropleth
-    
-
-      svg.selectAll(".country")
-        .data(countries)
-        .enter()
-        .insert("path", ".graticule")
-        .attr("class", "country")
-        .attr("id", function(d,i) { return d.id})
-        .attr("title", function(d,i) { return country_names[d.id] + " : " + country_hits[country_names[d.id]]})
-        .attr("d", path)
-        .on('mouseover', function(d,i,e){
-			$('#'+d.id).attr('opacity',0.5);
-        })
-        .on("mouseout", function(d, i){
-        	$('#'+d.id).attr('opacity',1);
-        })
-        .style("fill", function(d, i) {
-         if(typeof country_hits[country_names[d.id]] === 'undefined')
-         {
-            country_color = color(0);
-         }
-         else
-         {
-            country_color = color(Math.ceil((country_hits[country_names[d.id]]/max_hits)*5));
-         }
-         // return color_range[Math.ceil(country_hits[country_names[d.id]]/max_hits)];
-         return country_color;
-       });
+      }
 
 
-      svg.insert("path", ".graticule")
-        .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
-        .attr("class", "boundary")
-        .attr("d", path);
-      });
+
 
       d3.select(self.frameElement).style("height", h + "px");
 

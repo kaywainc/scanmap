@@ -57,7 +57,7 @@
       // alternative color_range: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]
       
 
-       var color = d3.scale.log()
+       var color = d3.scale.sqrt()
 //         .range(["hsl(200,100%,95%)", "hsl(200,100%,10%)"])
 //         .range(["hsl(216.4,69.5%,51.2%)", "hsl(220,69.2%,92.4%)"])
         .range(["hsl(217.5,69%,88.6%)", "hsl(216.6,69.5%,46.3%)"])
@@ -91,11 +91,12 @@
           .await(ready);
 
       function ready(error, world, world_hits) {
-        var world_hits = world_hits
-        var countries = topojson.feature(world, world.objects.countries).features
-        var max_hits = d3.max(world_hits, function(n) { return +n['hits']; });
+        var world_hits  = world_hits;
+        var countries   = topojson.feature(world, world.objects.countries).features;
+        var color_scale = [{name: "HSL", interpolate: d3.interpolateHsl}];  
+        var max_hits    = d3.max(world_hits, function(n) { return +n['hits']; });
 
-        ratios = countries.map(function ( d ){ 
+        var ratios = countries.map(function ( d ){ 
           $.each(world_hits,function (index,country){
             d.world_country = [];
               if( d.id == parseInt(country.id_iso_country))
@@ -140,7 +141,7 @@
             .on("mouseout", function(d, i){
               $('#'+d.id).attr('opacity',1);
             })
-            .style("fill", function(d,i) { if(typeof d.ratio !== "undefined") return color(d.ratio); else return "#eee";})
+            .style("fill", function(d,i) { if(typeof d.ratio !== "undefined") return color(d.ratio); else return "hsl(0,0%,93.3%)";})
             .attr("d", path);
 
         svg.insert("path", ".graticule")
@@ -148,28 +149,73 @@
           .attr("class", "boundary")
           .attr("d", path);
 
+
+        height  = h-450;
+        width   = w - 650;
+        var legend = d3.select("#scanmap_country")
+          .selectAll('.legend_canvas')
+          .data(color_scale)
+          // svg.selectAll('g.legend')
+          //   .data(color_scale)
+          .enter()
+          .append("div")
+          .attr("class", "legend")
+          .style("width", width + "px")
+          .style("height", height + "px");
+
+        legend.append("canvas")
+          .attr("width", width)
+          .attr("height", 1)
+          .style("width", width + "px")
+          .style("height", height + "px")
+          .each(render);
+
+
       }
 
+      function render(d)
+      {
+        var context = this.getContext("2d"),
+            image   = context.createImageData(width, 1);
 
+        for (var i = 0, j = -1, c; i < 100; i++) {
+          if(i==0)
+          {
+            c = d3.rgb('hsl(0,0%,93.3%)');
+          }
+          else
+          {
+            p = i/100 ;
+            c = d3.rgb(color(p));
+        
+          }
+          // console.log(c);
+          image.data[++j] = c.r;
+          image.data[++j] = c.g;
+          image.data[++j] = c.b;
+          image.data[++j] = 255;
 
+          image.data[++j] = c.r;
+          image.data[++j] = c.g;
+          image.data[++j] = c.b;
+          image.data[++j] = 255;
+
+          // image.data[++j] = c.r;
+          // image.data[++j] = c.g;
+          // image.data[++j] = c.b;
+          // image.data[++j] = 255;
+        }
+        context.putImageData(image, 0, 0);
+      }
 
       d3.select(self.frameElement).style("height", h + "px");
-
-
       //Adding legend for our Choropleth
-    
     
     $(document).ready(function(){
 	    $('.country').on('mouseover', function(e){
 	    	console.log(this);
-	    });
-    	
+	    });    	
     });
-  
-
-
-
-
 
     </script>
   </body>

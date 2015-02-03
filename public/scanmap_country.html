@@ -1,43 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Scan Map Country</title>
-<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-<script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
-<script type="text/javascript" src="./tooltip.js"></script>
-<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
-<script type="text/javascript" src="http://d3js.org/topojson.v1.min.js"></script>
-<style type="text/css">
-body {
-background: #ccc;
-}
-#scanmap_country {
-background: #fff;
-}
-.graticule {
-fill: none;
-stroke: #ccc;
-stroke-opacity: .5;
-stroke-width: .5px;
-}
-.land {
-fill: steelblue;
-}
-.boundary {
-fill: none;
-stroke: #fff;
-stroke-width: .5px;
-}
-.legend {
-font-size: 12px;
-}
-</style>
+  <meta charset="utf-8">
+  <title>Scan Map Country</title>
+  <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
+  <script type="text/javascript" src="./tooltip.js"></script>
+  <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+  <script type="text/javascript" src="http://d3js.org/topojson.v1.min.js"></script>
+  <style type="text/css">
+  body {
+    background: #ccc;
+  }
+  #scanmap_country {
+    background: #fff;
+  }
+  .graticule {
+    fill: none;
+    stroke: #ccc;
+    stroke-opacity: .5;
+    stroke-width: .5px;
+  }
+  .land {
+    fill: steelblue;
+  }
+  .boundary {
+    fill: none;
+    stroke: #fff;
+    stroke-width: .5px;
+  }
+  .legend {
+    font-size: 12px;
+  }
+  </style>
 </head>
 <body>
-<div id="scanmap_country"></div>
-<script type="text/javascript">
+  <div id="scanmap_country"></div>
+  <script type="text/javascript">
 // width and height (Google Map Size is: 597 x 365 Pixel; 1.63561644)
 var w = 1200; //142, 1059 Measurements from Line Chart
 var h = 470; // 255, 60 Measurements from Line Chart
@@ -48,142 +48,161 @@ var legend_labels = ["0 Scans", "Up to 10 Scans", "Up to 20 Scans", "Upd to 21 S
 var color = d3.scale.sqrt()
 // .range(["hsl(200,100%,95%)", "hsl(200,100%,10%)"])
 // .range(["hsl(216.4,69.5%,51.2%)", "hsl(220,69.2%,92.4%)"])
-.range(["hsl(217.5,69%,88.6%)", "hsl(216.6,69.5%,46.3%)"])
-.interpolate(d3.interpolateHcl);
+    .range(["hsl(217.5,69%,88.6%)", "hsl(216.6,69.5%,46.3%)"])
+    .interpolate(d3.interpolateHcl);
 // var projection = d3.geo.mercator()
 // .scale(130) // .scale((w + 1) / 2 / Math.PI)
 // .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
 // .precision(.1);
 var projection = d3.geo.larrivee()
-.scale(130) // .scale((w + 1) / 2 / Math.PI)
-.translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
-.precision(.1);
+  .scale(130) // .scale((w + 1) / 2 / Math.PI)
+  .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
+  .precision(.1);
+
 var path = d3.geo.path()
-.projection(projection);
+  .projection(projection);
+
 var graticule = d3.geo.graticule();
+
 var svg = d3.select("#scanmap_country")
-.append("svg")
-.attr("width", w)
-.attr("height", h)
-.attr("aria-label", "A country map for QR Code Scans");
+  .append("svg")
+  .attr("width", w)
+  .attr("height", h)
+  .attr("aria-label", "A country map for QR Code Scans");
+
 queue()
-.defer(d3.json, "mapdata/world-50m.json")
-.defer(d3.json, "scandata/country.json")
-.await(ready);
+  .defer(d3.json, "mapdata/world-50m.json")
+  .defer(d3.json, "scandata/country.json")
+  .await(ready);
+
 function ready(error, world, world_hits) {
-var world_hits = world_hits;
-var countries = topojson.feature(world, world.objects.countries).features;
-var color_scale = [{name: "HSL", interpolate: d3.interpolateHsl}];
-var max_hits = d3.max(world_hits, function(n) { return +n['hits']; });
-var ratios = countries.map(function ( d ){
-$.each(world_hits,function (index,country){
-d.world_country = [];
-if( d.id == parseInt(country.id_iso_country))
-{
-if(country.hits == 0)
-{
-d.ratio = 0.0001;
-}
-else if(country.hits / max_hits == 1)
-{
-d.ratio = 0.99;
-}
-else
-{
-d.ratio = country.hits/max_hits;
-}
-d.world_country = country;
-return false;
-}
-});
-if(typeof d.ratio !== 'undefined')
-{
-return d.ratio;
-}
-else
-{
-return .001;
-}
-}).sort(function(a, b) { return a - b; });
-color.domain([d3.quantile(ratios, .0001), d3.quantile(ratios, 1)]);
-svg.append("g")
-.attr("class", "countries")
-.selectAll("path")
-.data(countries)
-.enter().append("path")
-.attr("id", function(d,i) { return d.id})
-.call(d3.helper.tooltip())
-.text(function(d, i){ return "lalallalal"; })
-.on('mouseover', function(d,i,e){
-$('#'+d.id).attr('stroke','#999');
-$('#'+d.id).attr('stroke-width','1');
-})
-.on("mouseout", function(d, i){
-$('#'+d.id).attr('stroke','none');
-})
-.style("fill", function(d,i) { if(typeof d.ratio !== "undefined") return color(d.ratio); else return "hsl(0,0%,93.3%)";})
-.attr("d", path);
-svg.insert("path", ".graticule")
-.datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
-.attr("class", "boundary")
-.attr("d", path);
-height = h-450;
-width = w - 650;
-var legend = d3.select("#scanmap_country")
-.selectAll('.legend_canvas')
-.data(color_scale)
+  var world_hits = world_hits;
+  var countries = topojson.feature(world, world.objects.countries).features;
+  var color_scale = [{name: "HSL", interpolate: d3.interpolateHsl}];
+  var max_hits = d3.max(world_hits, function(n) { return +n['hits']; });
+  var ratios = countries.map(function ( d ){
+    $.each(world_hits,function (index,country){
+      d.world_country = [];
+      if( d.id == parseInt(country.id_iso_country))
+      {
+        if(country.hits == 0)
+        {
+          d.ratio = 0.0001;
+        }
+        else if(country.hits / max_hits == 1)
+        {
+          d.ratio = 0.99;
+        }
+        else
+        {
+          d.ratio = country.hits/max_hits;
+        }
+        d.world_country = country;
+        return false;
+      }
+    });
+    if(typeof d.ratio !== 'undefined')
+    {
+      return d.ratio;
+    }
+    else
+    {
+      return .001;
+    }
+  }).sort(function(a, b) { return a - b; });
+
+  color.domain([d3.quantile(ratios, .0001), d3.quantile(ratios, 1)]);
+
+  svg.append("g")
+    .attr("class", "countries")
+    .selectAll("path")
+    .data(countries)
+    .enter().append("path")
+    .attr("id", function(d,i) { return d.id})
+    .call(d3.helper.tooltip()
+    .text(function(d, i){
+      console.log(d.world_country.length );
+      if(d.world_country.length != 0)
+      { 
+        console.log(d.world_country);
+        return d.world_country.country+" "+d.world_country.hits;
+      }
+      else
+      {
+        return 'no hits';
+      }   
+        
+    }))
+    // .on('mouseover', function(d,i,e){
+    //   $('#'+d.id).attr('stroke','#999');
+    //   $('#'+d.id).attr('stroke-width','1');
+    // })
+    // .on("mouseout", function(d, i){
+    //   $('#'+d.id).attr('stroke','none');
+    // })
+    .style("fill", function(d,i) { if(typeof d.ratio !== "undefined") return color(d.ratio); else return "hsl(0,0%,93.3%)";})
+    .attr("d", path);
+
+  svg.insert("path", ".graticule")
+    .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+    .attr("class", "boundary")
+    .attr("d", path);
+
+  height = h-450;
+  width = w - 650;
+
+  var legend = d3.select("#scanmap_country")
+    .selectAll('.legend_canvas')
+    .data(color_scale)
 // svg.selectAll('g.legend')
 // .data(color_scale)
-.enter()
-.append("div")
-.attr("class", "legend")
-.style("width", width + "px")
-.style("height", height + "px");
+    .enter()
+    .append("div")
+    .attr("class", "legend")
+    .style("width", width + "px")
+    .style("height", height + "px");
+
 legend.append("canvas")
-.attr("width", width)
-.attr("height", 1)
-.style("width", width + "px")
-.style("height", height + "px")
-.each(render);
+  .attr("width", width)
+  .attr("height", 1)
+  .style("width", width + "px")
+  .style("height", height + "px")
+  .each(render);
 }
 //rendering legend
 function render(d)
 {
-var context = this.getContext("2d"),
-image = context.createImageData(width, 1);
-for (var i = 0, j = -1, c; i < 100; i++) {
-if(i==0)
-{
-c = d3.rgb('hsl(0,0%,93.3%)');
-}
-else
-{
-p = i/100 ;
-c = d3.rgb(color(p));
-}
+  var context = this.getContext("2d"),
+  image = context.createImageData(width, 1);
+  for (var i = 0, j = -1, c; i < 100; i++) {
+    if(i==0)
+    {
+      c = d3.rgb('hsl(0,0%,93.3%)');
+    }
+    else
+    {
+      p = i/100 ;
+      c = d3.rgb(color(p));
+    }
 // console.log(c);
-image.data[++j] = c.r;
-image.data[++j] = c.g;
-image.data[++j] = c.b;
-image.data[++j] = 255;
-image.data[++j] = c.r;
-image.data[++j] = c.g;
-image.data[++j] = c.b;
-image.data[++j] = 255;
+    image.data[++j] = c.r;
+    image.data[++j] = c.g;
+    image.data[++j] = c.b;
+    image.data[++j] = 255;
+
+    image.data[++j] = c.r;
+    image.data[++j] = c.g;
+    image.data[++j] = c.b;
+    image.data[++j] = 255;
 // image.data[++j] = c.r;
 // image.data[++j] = c.g;
 // image.data[++j] = c.b;
 // image.data[++j] = 255;
+  }
+  context.putImageData(image, 0, 0);
 }
-context.putImageData(image, 0, 0);
-}
+
 d3.select(self.frameElement).style("height", h + "px");
-//Adding legend for our Choropleth
-$(document).ready(function(){
-$('.country').on('mouseover', function(e){
-console.log(this);
-});
-});
 </script>
 </body>
 </html>

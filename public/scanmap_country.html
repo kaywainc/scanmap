@@ -48,16 +48,17 @@ var legend_labels = ["0 Scans", "Up to 10 Scans", "Up to 20 Scans", "Upd to 21 S
 var color = d3.scale.sqrt()
 // .range(["hsl(200,100%,95%)", "hsl(200,100%,10%)"])
 // .range(["hsl(216.4,69.5%,51.2%)", "hsl(220,69.2%,92.4%)"])
-    .range(["hsl(217.5,69%,88.6%)", "hsl(216.6,69.5%,46.3%)"])
+    // .range(["hsl(217.5,69%,88.6%)", "hsl(216.6,69.5%,46.3%)"])
+    .range(["hsl(200°, 100%, 95%)", "hsl(216°, 86%, 23%)"])
     .interpolate(d3.interpolateHcl);
-// var projection = d3.geo.mercator()
-// .scale(130) // .scale((w + 1) / 2 / Math.PI)
-// .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
-// .precision(.1);
-var projection = d3.geo.larrivee()
-  .scale(130) // .scale((w + 1) / 2 / Math.PI)
-  .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
-  .precision(.1);
+var projection = d3.geo.mercator()
+.scale(130) // .scale((w + 1) / 2 / Math.PI)
+.translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
+.precision(.1);
+// var projection = d3.geo.larrivee()
+//   .scale(130) // .scale((w + 1) / 2 / Math.PI)
+//   .translate([(w / 2)-110, (h / 2)+70]) // 110 instead of 142
+//   .precision(.1);
 
 var path = d3.geo.path()
   .projection(projection);
@@ -133,14 +134,14 @@ function ready(error, world, world_hits) {
       }   
         
     }))
-    // .on('mouseover', function(d,i,e){
-    //   $('#'+d.id).attr('stroke','#999');
-    //   $('#'+d.id).attr('stroke-width','1');
-    // })
-    // .on("mouseout", function(d, i){
-    //   $('#'+d.id).attr('stroke','none');
-    // })
-    .style("fill", function(d,i) { if(typeof d.ratio !== "undefined") return color(d.ratio); else return "hsl(0,0%,93.3%)";})
+    .on('mouseover', function(d,i,e){
+      $('#'+d.id).attr('stroke','#999');
+      $('#'+d.id).attr('stroke-width','1');
+    })
+    .on("mouseout", function(d, i){
+      $('#'+d.id).attr('stroke','none');
+    })
+    .style("fill", function(d,i) { if(typeof d.ratio !== "undefined") return color(d.ratio); else return "hsl(207.7,13.1%,80.6%)";})
     .attr("d", path);
 
   svg.insert("path", ".graticule")
